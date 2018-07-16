@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>ife第20-21天：让你和页面对话</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .palette {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .palette li {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #000;
+      cursor: pointer;
+    }
+
+    #imgContainer {
+      width: 480px;
+      height: 480px;
+      background-image: url(images/erik_ce204002.jpg);
+      background-repeat: no-repeat;
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <input id="name" type="text">    
+    <button id="submit-btn">Submit</button>
+  </section>
+    <hr/>
+  <section>
+    <label>
+      <input id="school" name="status" type="radio">
+      School
+    </label>
+    <label>
+      <input id="company" name="status" type="radio">
+      Company
+    </label>
+
+    <select id="school-select">        
+      <option>北京邮电大学</option>
+      <option>黑龙江大学</option>
+      <option>华中科技大学</option>
+    </select>
+
+    <select id="company-select">        
+      <option>百度</option>
+      <option>爱奇艺</option>        
+    </select>
+  </section>
+  <hr/>
+  <section>
+    <ul class="palette">
+      <li style="background-color:crimson"></li>
+      <li style="background-color:bisque"></li>
+      <li style="background-color:blueviolet"></li>
+      <li style="background-color:coral"></li>
+      <li style="background-color:chartreuse"></li>
+      <li style="background-color:darkolivegreen"></li>
+      <li style="background-color:rgba(0,0,0,.8)"></li>
+      <li style="background-color:#194738"></li>        
+    </ul>
+    <input type="text" id="backgroundColor" size="40" placeholder="不限颜色的格式（rgb、rgba、#fff、black）">
+    <button id="addLiTag">添加一个li元素</button>
+    <p class="color-picker"></p>
+  </section>
+  <hr/>
+  <section>
+    <div id="fade-obj" style="width:300px;height:300px;background:#000"></div>
+    <button id="fade-btn">淡出</button>
+  </section>
+  <hr/>
+  <section>
+    <b>秘制笑容哈！</b>
+    <div id="imgContainer"></div>
+  </section>
+<script>
+// 第一部分-键盘事件
+document.getElementById('submit-btn').onclick = function() {
+  console.log(document.querySelector('#name').value);
+}
+document.onkeydown = function(event) {
+  var e = event || window.event;
+  if (e.keyCode === 13) {
+    console.log(document.querySelector('#name').value);
+  }
+  if (e.keyCode === 27) {
+    document.querySelector('#name').value = '';
+  }
+}
+
+// 第二部分-单选按钮效果
+var school = document.getElementById('school');
+var company = document.getElementById('company');
+var school_select = document.getElementById('school-select');
+var company_select = document.getElementById('company-select');
+// 实现选中input元素后的方法
+function toggle(selectedInput,thisSelect,anthorSelect) {
+  let anthor_options = anthorSelect.options;
+  let this_options = thisSelect.options;
+  for (let i = 0; i < this_options.length; i++) {
+    this_options[i].setAttribute('value', this_options[i].innerText);
+    this_options[i].style.display = 'block';
+  }
+  selectedInput.onchange = function(){
+    if (selectedInput.checked === true) {
+      for (let i = 0; i < anthor_options.length; i++) {
+        anthor_options[i].setAttribute('value', anthor_options[i].innerText);
+        anthor_options[i].innerText = '';
+        anthor_options[i].style.display = 'none';
+      }
+  
+      for (let i = 0; i < this_options.length; i++) {
+        this_options[i].innerText = this_options[i].getAttribute('value');
+        this_options[i].style.display = 'block';
+      }
+    }
+  }
+}
+
+toggle(school,school_select,company_select);
+toggle(company,company_select,school_select); 
+
+// 第三部分-事件委托
+
+// var list = document.querySelectorAll("li");
+//   for (var i = 0, len = list.length; i < len; i++) {
+//     list[i].onclick = function(e) {
+//       var t = e.target;
+//       if (t.getAttribute('style').indexOf('#') === -1) {
+//         var c = t.style.backgroundColor;
+
+//       } else {
+//         var c = t.getAttribute('style').substr(t.getAttribute('style').indexOf('#'));
+//       }
+//       var p = document.getElementsByClassName("color-picker")[0];
+//       p.innerHTML = c;
+//       p.style.color = c;
+//     }
+//   }
+
+//使用事件委托,扩展添加功能并能自动识别颜色格式
+  var Oul = document.querySelector('.palette');
+  Oul.onclick = function(event) {
+    var e = event || window.event;
+    var t = e.target || e.srcElement;
+    if (t.getAttribute('style').indexOf('#') > -1) {
+      var c = t.getAttribute('style').substr(t.getAttribute('style').indexOf('#'));
+    }else if (t.getAttribute('style').indexOf('rgb(') > -1) {
+      var c = t.getAttribute('style').substr(t.getAttribute('style').indexOf('rgb(')).replace(';', '');
+    }else if (t.getAttribute('style').indexOf('rgba(') > -1) {
+      var c = t.getAttribute('style').substr(t.getAttribute('style').indexOf('rgba(')).replace(';', '');
+    }else {
+      var c = t.style.backgroundColor;
+    }
+    var p = document.getElementsByClassName("color-picker")[0];
+    p.innerHTML = c;
+    p.style.color = c;
+  }
+  var backgroundColor = document.getElementById('backgroundColor');
+  var addBtn = document.getElementById('addLiTag');
+  addBtn.onclick = function() {
+    var newLiEle = document.createElement('li');
+    newLiEle.style.backgroundColor = backgroundColor.value.match(/\S/ig,'').join('');
+    if (newLiEle.style.backgroundColor.length < 1) {
+      alert('输入颜色格式不正确，请重试');
+      return
+    }
+    Oul.append(newLiEle);
+  }
+
+  //第四部分-淡入淡出
+  var fadeBtn = document.querySelector('#fade-btn');
+  var fadeObj = document.querySelector('#fade-obj');
+  fadeBtn.onclick = function() {
+    if (fadeBtn.innerText === '淡出') {
+      fadeObj.style.opacity = 1;
+      let opacity = 1;
+      let timer = setInterval(function() {
+        fadeBtn.setAttribute('disabled',true);
+        opacity-=0.1;
+        if (opacity <= 0) {
+          clearInterval(timer);
+          fadeBtn.removeAttribute('disabled');
+          fadeBtn.innerText = '淡入';
+          return
+        }
+        fadeObj.style.opacity = opacity;
+      },500);
+    } else {
+      fadeObj.style.opacity = 0;
+      let opacity = 0;
+      let timer = setInterval(function() {
+        fadeBtn.setAttribute('disabled',true);
+        opacity+=0.1;
+        if (opacity >= 1) {
+          clearInterval(timer);
+          fadeBtn.removeAttribute('disabled');
+          fadeBtn.innerText = '淡出';
+          return
+        }
+        fadeObj.style.opacity = opacity;
+      },500);
+    }
+  }
+
+  //第五部分-笑脸动画
+  var imgContainer = document.getElementById('imgContainer');
+  imgContainer.style.backgroundPositionX = 0;
+  var positionY = 0;
+  var direction = 'down';
+  var timer = setInterval(function() {
+    if (direction === 'up') {
+      positionY += 480;
+      if (positionY === 0) {
+        direction = 'down';
+      }
+    } else if (direction === 'down') {
+      positionY-= 480;
+      if (positionY === -7680) {
+        direction = 'up';
+      }
+    }
+    imgContainer.style.backgroundPositionY = positionY + 'px';
+  },200);
+</script>
+</body>
+</html>
